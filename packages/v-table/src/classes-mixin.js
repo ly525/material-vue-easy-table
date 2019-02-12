@@ -1,0 +1,51 @@
+import settings from '../../src/settings/settings.js';
+
+export default {
+
+  computed: {
+
+    vTableRightBody () {
+      const result = {
+        'v-table-rightview-special-border': true,
+      };
+
+      result[settings.scrollbarClass] = true;
+
+      return result;
+    },
+
+    vTableFooter () {
+      const result = {
+
+        'v-table-rightview-special-border': true,
+      };
+
+      result[settings.scrollbarClass] = true;
+
+      return result;
+    },
+
+    vTableBodyInner () {
+      return {
+        'v-table-body-inner-pb': !this.hasTableFooter,
+      };
+    },
+
+    vTableBodyCell () {
+      return {
+        'vertical-border': this.showVerticalBorder,
+        'horizontal-border': this.showHorizontalBorder,
+      };
+    },
+  },
+
+  methods: {
+
+    vTableFiltersIcon (filters) {
+      return {
+        'v-icon-filter': true,
+        'checked': filters.some(x => x.selected && x.value !== this.filterSpecialValue),
+      };
+    },
+  },
+};
