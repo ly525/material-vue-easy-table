@@ -8,10 +8,26 @@ export default {
   methods: {
 
         // 初始化 columns filters
+        /**
+         {field: 'name', title: '姓名', width: 80, titleAlign: 'center',columnAlign:'center',isResize:true,
+           filterMultiple: true, // 如果指定 filterMultiple: true，则使用多选，默认为单选。
+           filters: [{
+               label: '孙伟',
+               value: '孙伟',
+           }, {
+               label: '吴伟',
+               value: '吴伟',
+           }, {
+               label: '周伟',
+               value: '周伟',
+           }],
+           isFrozen:true
+         }
+         */
     initColumnsFilters () {
             // 如果是复杂表头
       if (this.isComplexTitle) {
-        this.internalTitleRows.forEach(rows => {
+        this.titleRows_.forEach(rows => {
           rows.forEach(col => {
             if (this.enableFilters(col.filters, col.fields) && !col.filterMultiple) {
               col.filters.unshift({ label: '全部', value: this.filterSpecialValue, selected: true });
@@ -19,7 +35,7 @@ export default {
           });
         });
       } else {
-        this.internalColumns.map(col => {
+        this.columns_.forEach(col => {
           if (this.enableFilters(col.filters) && !col.filterMultiple) {
             col.filters.unshift({ label: '全部', value: this.filterSpecialValue, selected: true });
           }
@@ -38,7 +54,9 @@ export default {
         /*
          * 是否包含 filters 功能
          * fields : 当是复杂表头时，必须保证不是 colspan 的列
-         * */
+         *
+         * TODO 这段很复杂，目前不能理解这里的逻辑
+         */
     enableFilters (filters, fields) {
       let result = false;
 
@@ -56,13 +74,13 @@ export default {
     },
 
     filterSummary () {
-      let result = {},
-        columns = [],
-        tempArr = [];
+      const result = {};
+      let columns = [];
+      let tempArr = [];
 
             // 复杂表头
       if (this.isComplexTitle) {
-        columns = this.internalTitleRows;
+        columns = this.titleRows_;
 
         columns.forEach(rows => {
           rows.forEach(col => {
@@ -79,7 +97,7 @@ export default {
           });
         });
       } else {
-        columns = this.internalColumns;
+        columns = this.columns_;
 
         columns.forEach(col => {
           tempArr = [];

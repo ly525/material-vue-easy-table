@@ -36,7 +36,7 @@ export default {
       }
 
             // 最后一列不允许拖动
-            /* if (this.internalColumns[this.internalColumns.length - 1].field === column) {
+            /* if (this.columns_[this.columns_.length - 1].field === column) {
              return false;
              } */
 
@@ -56,7 +56,7 @@ export default {
 
       if (rect.width >= this.minColumnWidth && rect.right - event.pageX < 10) {
         if (!this.isDragging) { // 拖动中不设置
-          this.draggingColumn = this.internalColumns.find(x => x.field === column);
+          this.draggingColumn = this.columns_.find(x => x.field === column);
         }
 
         bodyStyle.cursor = 'col-resize';
@@ -103,9 +103,9 @@ export default {
     },
 
     setDragLinePosition (e) {
-      const tableLeft = utils.getViewportOffset(this.$el).left,
-        dragLine = this.$el.querySelector('.v-table-drag-line'),
-        clientX = e.clientX;
+      const tableLeft = utils.getViewportOffset(this.$el).left;
+      const dragLine = this.$el.querySelector('.v-table-drag-line');
+      const clientX = e.clientX;
 
       if (this.draggingColumn.width + (clientX - this.draggingStartX) <= this.minColumnWidth) {
         return;
@@ -135,9 +135,9 @@ export default {
         }
       }
 
-      let rightViewBody = this.$el.querySelector('.v-table-rightview .v-table-body'),
-        rightViewFooter = this.$el.querySelector('.v-table-rightview .v-table-footer'),
-        hasTableFooter = this.hasTableFooter;
+      const rightViewBody = this.$el.querySelector('.v-table-rightview .v-table-body');
+      const rightViewFooter = this.$el.querySelector('.v-table-rightview .v-table-footer');
+      const hasTableFooter = this.hasTableFooter;
 
       if (this.totalColumnsWidth < this.internalWidth) {
         if (!hasTableFooter) {

@@ -16,11 +16,12 @@ export default {
     },
         // 允许排序的列集合
     setSortColumns () {
-      let self = this, sortColumns = {},
-        titleRowsToSortInfo = [];
+      const self = this;
+      const sortColumns = {};
+      const titleRowsToSortInfo = [];
 
-      if (self.internalTitleRows.length > 0) {
-        self.internalTitleRows.filter(function (row) {
+      if (self.titleRows_.length > 0) {
+        self.titleRows_.filter(function (row) {
           row.filter(function (column, index) {
             if (typeof column.orderBy === 'string' && column.fields.length === 1) {
               column.field = column.fields[0];
@@ -30,7 +31,7 @@ export default {
         });
       }
 
-      const collection = titleRowsToSortInfo.length > 0 ? titleRowsToSortInfo : self.internalColumns;
+      const collection = titleRowsToSortInfo.length > 0 ? titleRowsToSortInfo : self.columns_;
 
       collection.filter(function (item, index) {
         if (self.enableSort(item.orderBy)) {

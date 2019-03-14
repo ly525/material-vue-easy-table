@@ -19,7 +19,7 @@ export default {
     getResizeColumns () {
       const result = [];
 
-      this.internalColumns.forEach(item => {
+      this.columns_.forEach(item => {
         if (item.isResize) {
           result.push({ width: item.width, field: item.field });
         }
@@ -52,8 +52,8 @@ export default {
         return false;
       }
 
-      let totalColumnsHeight = this.getTotalColumnsHeight(),
-        scrollbarWidth = this.scrollbarWidth;
+      const totalColumnsHeight = this.getTotalColumnsHeight();
+      const scrollbarWidth = this.scrollbarWidth;
 
             // 有footer 功能
       if (this.hasTableFooter) {
@@ -62,7 +62,7 @@ export default {
             this.footerTotalHeight += scrollbarWidth;
 
             if (!(this.height && this.height > 0) || this.height > totalColumnsHeight) {
-              this.internalHeight += scrollbarWidth;
+              this.height_ += scrollbarWidth;
             }
           }
         } else if (!hasScrollBar) {
@@ -70,17 +70,15 @@ export default {
             this.footerTotalHeight -= scrollbarWidth;
 
             if (!(this.height && this.height > 0) || this.height > totalColumnsHeight) {
-              this.internalHeight -= scrollbarWidth;
+              this.height_ -= scrollbarWidth;
             }
           }
         }
-      }
-            // 当没有设置高度时计算总高度 || 设置的高度大于所有列高度之和时
-      else if (!(this.height && this.height > 0) || this.height > totalColumnsHeight) {
-        if (hasScrollBar && this.internalHeight + 2 < totalColumnsHeight + scrollbarWidth) {
-          this.internalHeight += scrollbarWidth;
+      } else if (!(this.height && this.height > 0) || this.height > totalColumnsHeight) { // 当没有设置高度时计算总高度 || 设置的高度大于所有列高度之和时
+        if (hasScrollBar && this.height_ + 2 < totalColumnsHeight + scrollbarWidth) {
+          this.height_ += scrollbarWidth;
         } else if (!hasScrollBar) {
-          this.internalHeight = this.getTotalColumnsHeight();
+          this.height_ = this.getTotalColumnsHeight();
         }
       }
     },
@@ -91,19 +89,19 @@ export default {
         return false;
       }
 
-      let totalColumnsHeight = this.getTotalColumnsHeight(),
-        maxWidth = this.maxWidth,
-        maxHeight = (this.height && this.height > 0) ? this.height : totalColumnsHeight,
-        minWidth = this.minWidth,
-        minHeight = this.minHeight > totalColumnsHeight ? totalColumnsHeight : this.minHeight,
-        view = this.$el,
-        viewOffset = utils.getViewportOffset(view),
-        currentWidth = view.getBoundingClientRect !== 'undefined' ? view.getBoundingClientRect().width : view.clientWidth,
-        currentHeight = view.getBoundingClientRect !== 'undefined' ? view.getBoundingClientRect().height : view.clientHeight,
-                // right = window.document.documentElement.clientWidth - currentWidth - viewOffset.left,
-        bottom = window.document.documentElement.clientHeight - currentHeight - viewOffset.top - 2,
-        bottom2 = viewOffset.bottom2,
-        scrollbarWidth = this.scrollbarWidth;
+      const totalColumnsHeight = this.getTotalColumnsHeight();
+      const maxWidth = this.maxWidth; // 5000
+      const maxHeight = (this.height && this.height > 0) ? this.height : totalColumnsHeight; // 取 Math.min(height, totalHeight)，也就是以用户设置的高度为主
+      const minWidth = this.minWidth; // 50
+      const minHeight = this.minHeight > totalColumnsHeight ? totalColumnsHeight : this.minHeight; // 取 Math.max(minHeight, totalHeight)
+      const view = this.$el; // div.table__overflow
+      const viewOffset = utils.getViewportOffset(view);
+      let currentWidth = view.getBoundingClientRect !== 'undefined' ? view.getBoundingClientRect().width : view.clientWidth;
+      let currentHeight = view.getBoundingClientRect !== 'undefined' ? view.getBoundingClientRect().height : view.clientHeight;
+                // right = window.document.documentElement.clientWidth - currentWidth - viewOffset.left;
+      let bottom = window.document.documentElement.clientHeight - currentHeight - viewOffset.top - 2; // 元素最底端距离文档底端的距离
+      let bottom2 = viewOffset.bottom2; // bottom2：元素最底端距离文档最底部的距离
+      const scrollbarWidth = this.scrollbarWidth;
 
 
       if (this.isHorizontalResize && this.internalWidth && this.internalWidth > 0 && currentWidth > 0) {
@@ -134,7 +132,7 @@ export default {
           }
         }
 
-        this.internalHeight = currentHeight;
+        this.height_ = currentHeight;
       }
 
       this.changeColumnsWidth(currentWidth);
@@ -142,10 +140,10 @@ export default {
 
         // 改变所有需要自适应列的宽度
     changeColumnsWidth (currentWidth) {
-      let differ = currentWidth - this.totalColumnsWidth,
-        initResizeWidths = this.initTotalColumnsWidth,
-        rightViewBody = this.$el.querySelector('.v-table-rightview .v-table-body'),
-        rightViewFooter = this.$el.querySelector('.v-table-rightview .v-table-footer');
+      let differ = currentWidth - this.totalColumnsWidth;
+      const initResizeWidths = this.initTotalColumnsWidth;
+      const rightViewBody = this.$el.querySelector('.v-table-rightview .v-table-body');
+      const rightViewFooter = this.$el.querySelector('.v-table-rightview .v-table-footer');
 
 
       if (currentWidth <= initResizeWidths && !this.isTableEmpty) { // 排除表格无数据的影响
@@ -158,7 +156,7 @@ export default {
         this.adjustHeight(true);
       } else {
                 // 防止最后一列右距中时内容显示不全
-        if (this.getTotalColumnsHeight() > this.internalHeight) {
+        if (this.getTotalColumnsHeight() > this.height_) {
           differ -= this.scrollbarWidth;
         }
 
@@ -180,7 +178,7 @@ export default {
       } else { // 最小化有滚动条时
         this.columns.forEach((col, index) => {
           if (col.isResize) {
-            this.internalColumns[index].width = col.width;
+            this.columns_[index].width = col.width;
           }
         });
       }
@@ -193,13 +191,13 @@ export default {
          * 备注：浏览器 px 必须精确多整数
          * */
     setColumnsWidth (differ) {
-      let resizeColumnsLen = this.resizeColumns.length,
-        average = Math.floor(differ / resizeColumnsLen),
-        totalAverage = average * resizeColumnsLen,
-        leftAverage = differ - totalAverage,
-        leftAverageFloor = Math.floor(leftAverage),
-        averageColumnsWidthArr = (new Array(resizeColumnsLen)).fill(average),
-        index = 0;
+      const resizeColumnsLen = this.resizeColumns.length;
+      const average = Math.floor(differ / resizeColumnsLen);
+      const totalAverage = average * resizeColumnsLen;
+      const leftAverage = differ - totalAverage;
+      const leftAverageFloor = Math.floor(leftAverage);
+      const averageColumnsWidthArr = (new Array(resizeColumnsLen)).fill(average);
+      let index = 0;
 
             // 剩余的宽度以整数的形式平均到每个列
       for (let i = 0; i < leftAverageFloor; i++) {
@@ -209,7 +207,7 @@ export default {
             // 剩余的小数给最后一列
       averageColumnsWidthArr[resizeColumnsLen - 1] += (leftAverage - leftAverageFloor);
 
-      this.internalColumns.map(item => {
+      this.columns_.map(item => {
         if (item.isResize) {
           item.width += averageColumnsWidthArr[index++];
         }

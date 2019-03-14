@@ -114,7 +114,7 @@
                     <v-checkbox-group v-model="checkboxGroupModel" @change="handleCheckGroupChange">
                         <table class="v-table-btable" cellspacing="0" cellpadding="0" border="0">
                             <tbody>
-                            <tr v-for="(item, rowIndex) in internalTableData"
+                            <tr v-for="(item, rowIndex) in tableData_"
                                 :key="rowIndex"
                                 class="v-table-row"
                                 :style="[trBgColor(rowIndex+1)]"
@@ -305,7 +305,7 @@
                 <v-checkbox-group v-model="checkboxGroupModel" @change="handleCheckGroupChange">
                     <table class="v-table-btable" cellspacing="0" cellpadding="0" border="0">
                         <tbody>
-                        <tr :key="rowIndex" v-for="(item,rowIndex) in internalTableData" class="v-table-row"
+                        <tr :key="rowIndex" v-for="(item,rowIndex) in tableData_" class="v-table-row"
                             :style="[trBgColor(rowIndex+1)]"
                             @mouseenter.stop="handleMouseEnter(rowIndex)"
                             @mouseleave.stop="handleMouseOut(rowIndex)"
@@ -401,9 +401,9 @@
         <!-- <loading
           v-if="isLoading"
           :loading-content="loadingContent"
-          :title-rows="internalTitleRows"
+          :title-rows="titleRows_"
           :title-row-height="titleRowHeight"
-          :columns="internalColumns"
+          :columns="columns_"
           :loading-opacity="loadingOpacity"
         ></loading> -->
 
@@ -448,15 +448,15 @@
       data () {
         return {
                 // 本地列表数据
-          internalTableData: [],
+          tableData_: [],
                 // 本地宽度
           internalWidth: 0,
                 // 本地高度
-          internalHeight: 0,
+          height_: 0,
                 // 本地列数据
-          internalColumns: [],
+          columns_: [],
                 // 本地复杂表头数据
-          internalTitleRows: [],
+          titleRows_: [],
           errorMsg: ' V-Table error: ',
                 // 最大宽度（当width:'max'时）
           maxWidth: 5000,
@@ -482,7 +482,14 @@
           type: Number,
           default: 38,
         },
-            // 随着浏览器窗口改变，横向自适应
+        /**
+         *  随着浏览器窗口改变，横向自适应
+         * 如果是横向自适应需要满足下面条件：
+         * 1.通过 is-horizontal-resize 属性设置横向自适应；
+         * 2.通过 isResize 属性设置哪些列需要自适应（所有列都可以设置，达到所有列自适应）；
+         * 3.通过 style="width:100%" 设置显示比例（百分比的值根据需求而定）；
+         * 4.每个列必须提供宽度，这个宽度是自适应的最小宽度；
+        */
         isHorizontalResize: {
           type: Boolean,
           default: false,
@@ -538,6 +545,10 @@
         columns: {
           type: Array,
           require: true,
+          validator (val) {
+            return Array.isArray(val);
+          },
+          default: () => [],
         },
 
             // 特殊表头
@@ -551,9 +562,10 @@
         tableData: {
           type: Array,
           require: true,
-          default () {
-            return [];
+          validator (val) {
+            return Array.isArray(val);
           },
+          default: () => [],
         },
             // 分页序号
         pagingIndex: Number,
@@ -650,12 +662,12 @@
 
             // 是否是复杂表头
         isComplexTitle () {
-          return (Array.isArray(this.internalTitleRows) && this.internalTitleRows.length > 0);
+          return (Array.isArray(this.titleRows_) && this.titleRows_.length > 0);
         },
 
             // 获取表格高度
         getTableHeight () {
-          return this.isTableEmpty ? this.tableEmptyHeight : this.internalHeight;
+          return this.isTableEmpty ? this.tableEmptyHeight : this.height_;
         },
 
             // 左侧区域宽度
@@ -676,10 +688,10 @@
             // 左侧、右侧区域高度
         bodyViewHeight () {
           let result;
-          if (this.internalTitleRows.length > 0) {
-            result = this.internalHeight - this.titleRowHeight * (this.internalTitleRows.length + this.getTitleRowspanTotalCount);
+          if (this.titleRows_.length > 0) {
+            result = this.height_ - this.titleRowHeight * (this.titleRows_.length + this.getTitleRowspanTotalCount);
           } else {
-            result = this.internalHeight - this.titleRowHeight;
+            result = this.height_ - this.titleRowHeight;
           }
 
                 // 1px: 当有滚动条时，使滚动条显示全
@@ -689,8 +701,9 @@
         },
 
             // 所有列的总宽度
+            // TODO 每个列都必须指定 width 吗？
         totalColumnsWidth () {
-          return this.internalColumns.reduce(function (total, curr) {
+          return this.columns_.reduce(function (total, curr) {
             return curr.width ? (total + curr.width) : total;
           }, 0);
         },
@@ -704,17 +717,17 @@
 
             // 获取所有的字段
         getColumnsFields () {
-          return this.internalColumns.map(item => item.field);
+          return this.columns_.map(item => item.field);
         },
 
             // 获取非固定列的字段集合
         getNoFrozenColumnsFields () {
-          return this.internalColumns.filter(x => !x.isFrozen).map(item => item.field);
+          return this.columns_.filter(x => !x.isFrozen).map(item => item.field);
         },
 
             // 获取固定列的字段集合
         getFrozenColumnsFields () {
-          return this.internalColumns.filter(x => x.isFrozen).map(item => item.field);
+          return this.columns_.filter(x => x.isFrozen).map(item => item.field);
         },
       },
       methods: {
@@ -739,7 +752,7 @@
         titleColumnWidth (fields) {
           let result = 0;
           if (Array.isArray(fields)) {
-            const matchItems = this.internalColumns.filter((item, index) => fields.some(x => x === item.field));
+            const matchItems = this.columns_.filter((item, index) => fields.some(x => x === item.field));
 
             result = matchItems.reduce((total, curr) => total + curr.width, 0);
           } else {
@@ -775,11 +788,11 @@
 
             // 获取所有列的总高度
         getTotalColumnsHeight () {
-          let titleTotalHeight = (this.internalTitleRows && this.internalTitleRows.length > 0) ? this.titleRowHeight * this.internalTitleRows.length : this.titleRowHeight;
+          let titleTotalHeight = (this.titleRows_ && this.titleRows_.length > 0) ? this.titleRowHeight * this.titleRows_.length : this.titleRowHeight;
 
           titleTotalHeight += this.footerTotalHeight;
 
-          return titleTotalHeight + this.internalTableData.length * this.rowHeight + 1;
+          return titleTotalHeight + this.tableData_.length * this.rowHeight + 1;
         },
 
 
@@ -790,23 +803,25 @@
 
             // 当宽度设置 && 非固定列未设置宽度时（列自适应）初始化列集合
         initColumns () {
-          this.internalHeight = this.height;
+          this.height_ = this.height;
 
           this.footerTotalHeight = this.getFooterTotalRowHeight;
 
-          // this.internalColumns = Array.isArray(this.columns) ? deepClone(this.columns) : [];
-          this.internalColumns = Array.isArray(this.columns) ? _.cloneDeep(this.columns) : [];
-
-          // this.internalTitleRows = Array.isArray(this.titleRows) ? deepClone(this.titleRows) : [];
-          this.internalTitleRows = Array.isArray(this.titleRows) ? _.cloneDeep(this.titleRows) : [];
+          this.columns_ = _.cloneDeep(this.columns);
+          this.titleRows_ = _.cloneDeep(this.titleRows);
 
           this.initColumnsFilters();
 
+          /**
+           * 这部分几乎都是在处理宽度相关的内容
+           * 1. 通过计算属性 totalColumnsWidth 得到传入的所有列的总宽度
+           * 2. this.resizeColumns = this.columns_.filter(item => item.isResize);
+           */
           this.initResizeColumns();
 
-          this.hasFrozenColumn = this.internalColumns.some(x => x.isFrozen);
+          this.hasFrozenColumn = this.columns_.some(x => x.isFrozen);
 
-          this.initTableWidth();
+          this.initTableWidth(); // this.internalWidth = this.isHorizontalResize ? this.maxWidth : this.width;
 
           this.setSortColumns();
 
@@ -814,10 +829,12 @@
           let self = this, widthCountCheck = 0;
 
           if (self.internalWidth && self.internalWidth > 0) {
-            self.internalColumns.map(function (item) {
-              if (!(item.width && item.width > 0)) {
+            const isHorizontalResize = this.isHorizontalResize;
+            self.columns_.forEach(function (item) {
+              // if (!(item.width && item.width > 0)) {
+              if (!item.width) {
                 widthCountCheck++;
-                if (self.isHorizontalResize) {
+                if (isHorizontalResize) {
                   console.error(`${self.errorMsg}If you are using the isHorizontalResize property,Please set the value for each column's width`);
                 } else {
                   item.width = self.internalWidth - self.totalColumnsWidth;
@@ -838,6 +855,7 @@
           if (!(this.internalWidth && this.internalWidth > 0)) {
             if (this.columns && this.columns.length > 0) {
               this.internalWidth = this.columns.reduce((total, curr) => total + curr.width, 0);
+              // TODO 这种做法是否可以？ this.internalWidth = this.totalColumnsWidth;
             }
           }
 
@@ -846,16 +864,17 @@
                 // 当没有设置高度时计算总高度 || 设置的高度大于所有列高度之和时
           if (!(this.height && this.height > 0) || this.height > totalColumnsHeight) {
             if (!this.isVerticalResize) {
-              this.internalHeight = totalColumnsHeight;
+              this.height_ = totalColumnsHeight;
             }
           } else if (this.height <= totalColumnsHeight) {
-            this.internalHeight = this.height;
+            this.height_ = this.height;
           }
         },
 
-        initInternalTableData () {
+        cloneTableData () {
           // return Array.isArray(this.tableData) ? deepClone(this.tableData) : [];
-          return Array.isArray(this.tableData) ? _.cloneDeep(this.tableData) : [];
+          // return Array.isArray(this.tableData) ? _.cloneDeep(this.tableData) : [];
+          return _.cloneDeep(this.tableData);
         },
 
         // 对外暴露（隐藏显示切换时）
@@ -868,12 +887,17 @@
         },
       },
       created () {
-        this.internalTableData = this.initInternalTableData(this.tableData);
+        this.tableData_ = this.cloneTableData(this.tableData);
 
         if (Array.isArray(this.columns) && this.columns.length > 0) {
           this.initColumns();
         }
 
+        /**
+         * 1. this.hasSelectionColumns => this.columns_.some(col.type === 'selection')
+         * 2. 设置选中行的状态：this.checkboxGroupModel.push(itemIndex if item._checked)
+         * 3. 设置全选按钮的状态
+         */
         this.updateCheckboxGroupModel();
 
         this.initView();
@@ -892,25 +916,22 @@
         this.controlScrollBar();
       },
       watch: {
+        // 重新覆盖复杂表头信息
         titleRows (newVal) {
           this.initColumns();
           this.tableResize();
         },
             // 重新跟新列信息
-        'columns': function (newVal) {
+        columns (newVal) {
           this.initColumns();
           this.tableResize();
         },
-            // 重新覆盖复杂表头信息
-        'titleRows': function (newVal) {
-          this.initColumns();
-        },
-
             // deep watch
-        'tableData': function (newVal) {
+        tableData (newVal) {
           this.skipRenderCells = [];
 
-          this.internalTableData = this.initInternalTableData(newVal);
+          this.tableData_ = this.cloneTableData(newVal);
+
 
           this.updateCheckboxGroupModel();
 
@@ -967,11 +988,11 @@
     font-size: 13px;
   }
 
-  // 支持自定义高度
-  table tbody td,
-  table tbody th {
-    height: 42px;
-  }
+  // // 支持自定义高度
+  // table tbody td,
+  // table tbody th {
+  //   height: 42px;
+  // }
 
 
   // 支持通过 CSS 自定义 奇偶行的样式

@@ -1,3 +1,29 @@
+/**
+  cellMerge(rowIndex, rowData, field) {
+    if (field === "name" && rowData[field] === "李伟") {
+      return {
+        colSpan: 2,
+        rowSpan: 1,
+        content: '<span style="color:red">单元格 colSpan</span>',
+        componentName: ""
+      };
+    } else if (rowIndex === 3 && field === "gender") {
+      return {
+        colSpan: 1,
+        rowSpan: 3,
+        content: '<span style="color:red">单元格 rowSpan</span>',
+        componentName: ""
+      };
+    } else if (rowIndex === 2 && field === "birthday") {
+      return {
+        colSpan: 2,
+        rowSpan: 3,
+        content: "",
+        componentName: "table-cell-merge"
+      };
+    }
+  }
+*/
 export default {
 
   data () {
@@ -29,17 +55,18 @@ export default {
     },
 
         // 设置不渲染的列
+    // skipRenderCells demo: [ "1-gender", "4-gender", "5-gender", "3-birthday", "4-birthday", "2-hobby", "3-hobby", "4-hobby" ]
     setSkipRenderCells (colSpan, rowSpan, rowIndex, field, isFrozenColumns) {
-      let columnsFields = isFrozenColumns ? this.getFrozenColumnsFields : this.getNoFrozenColumnsFields,
-        skipCell = '',
-        startPosX, endPosX, startPosY, endPosY;
-
-      endPosX = startPosX = columnsFields.indexOf(field);
+      const columnsFields = isFrozenColumns ? this.getFrozenColumnsFields : this.getNoFrozenColumnsFields;
+      let skipCell = '';
+      const startPosX = columnsFields.indexOf(field);
+      let endPosX = columnsFields.indexOf(field);
       if (colSpan && colSpan > 1) {
         endPosX = startPosX + colSpan - 1;
       }
 
-      endPosY = startPosY = rowIndex;
+      const startPosY = rowIndex;
+      let endPosY = rowIndex;
       if (rowSpan && rowSpan > 1) {
         endPosY = rowIndex + rowSpan - 1;
       }
@@ -62,11 +89,8 @@ export default {
 
         // 设置 colSpan
     setColRowSpan (rowIndex, field, rowData) {
-      let result = {
-          colSpan: '',
-          rowSpan: '',
-        },
-        setting = this.cellMerge && this.cellMerge(rowIndex, rowData, field);
+      let result = { colSpan: '', rowSpan: '' };
+      const setting = this.cellMerge && this.cellMerge(rowIndex, rowData, field);
 
       if (setting) {
         result = {
@@ -107,20 +131,20 @@ export default {
          * isFrozenColumns:是否是固定列
          * */
     getRowWidthByColSpan (rowIndex, field, rowData) {
-      let endPosX,
-        startPosX,
-        columnsFields = this.getColumnsFields,
-        setting = this.cellMerge && this.cellMerge(rowIndex, rowData, field),
-        colSpan = setting.colSpan,
-        totalWidth = 0;
+      let endPosX;
+      let startPosX;
+      const columnsFields = this.getColumnsFields;
+      const setting = this.cellMerge && this.cellMerge(rowIndex, rowData, field);
+      const colSpan = setting.colSpan;
+      let totalWidth = 0;
 
       if (setting && (colSpan && colSpan >= 1)) {
         startPosX = columnsFields.indexOf(field);
 
         endPosX = startPosX + colSpan - 1;
 
-        for (var i = startPosX; i <= endPosX; i++) {
-          this.internalColumns.forEach(x => {
+        for (let i = startPosX; i <= endPosX; i++) {
+          this.columns_.forEach(x => {
             if (columnsFields[i] === x.field) {
               totalWidth += x.width;
             }
@@ -132,6 +156,18 @@ export default {
     },
 
         // 合并的单元格渲染的内容类型
+    /**
+      <span v-if="cellMergeContentType(rowIndex, col.field, item).isComponent">
+        <component
+          :rowData="item"
+          :field="col.field ? col.field : ''"
+          :index="rowIndex"
+          :is="cellMerge(rowIndex, item, col.field).componentName"
+          @on-custom-comp="customCompFunc"
+        ></component>
+      </span>
+      <span v-else v-html="cellMerge(rowIndex, item, col.field).content"></span>
+     */
     cellMergeContentType (rowIndex, field, rowData) {
       const result = {
         isComponent: false,

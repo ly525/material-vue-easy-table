@@ -19,8 +19,8 @@ export default {
 
         // table 数据为空的处理
     tableEmpty () {
-      let tableData = this.internalTableData,
-        tableEmptyHeight = 0;
+      const tableData = this.tableData_;
+      let tableEmptyHeight = 0;
 
       if (Array.isArray(tableData) && tableData.length > 0) {
         this.isTableEmpty = false;
@@ -39,8 +39,8 @@ export default {
     },
 
     tableEmptyScrollEvent (e) {
-      let headerEle = this.$el.querySelector('.v-table-rightview .v-table-header'),
-        tableEmptyEle = this.$el.querySelector('.v-table-empty .v-table-empty-scroll');
+      const headerEle = this.$el.querySelector('.v-table-rightview .v-table-header');
+      const tableEmptyEle = this.$el.querySelector('.v-table-empty .v-table-empty-scroll');
 
       if (tableEmptyEle) {
         headerEle.scrollLeft = tableEmptyEle.scrollLeft;

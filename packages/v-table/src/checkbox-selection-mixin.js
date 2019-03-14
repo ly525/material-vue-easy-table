@@ -18,7 +18,7 @@ export default {
     disabledUnChecked () {
       const result = [];
 
-      this.internalTableData.filter((item, index) => {
+      this.tableData_.forEach((item, index) => {
         if (item._disabled && !item._checked) {
           result.push(index);
         }
@@ -28,12 +28,12 @@ export default {
 
         // 获取当前选中的行信息
     getCheckedTableRow () {
-      return this.internalTableData.filter((item, index) => this.checkboxGroupModel.indexOf(index) > -1);
+      return this.tableData_.filter((item, index) => this.checkboxGroupModel.indexOf(index) > -1);
     },
 
-        // 检测是否有
+        // 检测是否开启多选功能
     hasSelectionColumns () {
-      return this.internalColumns.some(x => x.type && x.type === 'selection');
+      return this.columns_.some(x => x.type && x.type === 'selection');
     },
   },
 
@@ -41,7 +41,7 @@ export default {
         // 检测复杂表头是否需要设置 checkbox
     isSelectionCol (fileds) {
       if (Array.isArray(fileds) && fileds.length === 1) {
-        return this.internalColumns.some(x => x.field === fileds[0] && x.type === 'selection');
+        return this.columns_.some(x => x.field === fileds[0] && x.type === 'selection');
       }
 
       return false;
@@ -51,7 +51,7 @@ export default {
     disabledChecked () {
       const result = [];
 
-      this.internalTableData.filter((item, index) => {
+      this.tableData_.forEach((item, index) => {
         if (item._disabled && item._checked) {
           result.push(index);
         }
@@ -64,7 +64,7 @@ export default {
       if (this.isAllChecked) {
         this.checkboxGroupModel = [];
 
-        const allLen = this.internalTableData.length;
+        const allLen = this.tableData_.length;
 
         if (allLen > 0) {
           for (let i = 0; i < allLen; i++) {
@@ -98,8 +98,8 @@ export default {
 
         // 设置部分选中状态（全选或者取消全选时）
     setIndeterminateState () {
-      let checkedLen = this.checkboxGroupModel.length,
-        allLen = this.internalTableData.length;
+      const checkedLen = this.checkboxGroupModel.length;
+      const allLen = this.tableData_.length;
 
             // 全选
       if (checkedLen > 0 && checkedLen === allLen) {
@@ -111,10 +111,11 @@ export default {
       }
     },
 
-        // 设置选中状态
+        // 设置选中状态。设置全选按钮的状态：全选、全部选、部分选中
+        // indeterminate：部分选中
     setCheckState () {
-      let checkedLen = this.checkboxGroupModel.length,
-        allLen = this.internalTableData.length;
+      const checkedLen = this.checkboxGroupModel.length;
+      const allLen = this.tableData_.length;
 
             // 全选
       if (checkedLen > 0 && checkedLen === allLen) {
@@ -133,12 +134,14 @@ export default {
     },
 
         // 修改checkbox 选中状态(table.vue 中调用)
+        // 通过给 columns 设置 type: 'selection'，即可自动开启多选功能。
+        // column: {width: 60, titleAlign: 'center',columnAlign:'center',type: 'selection'},
     updateCheckboxGroupModel () {
       if (!this.hasSelectionColumns) { return false; }
 
       this.checkboxGroupModel = [];
 
-      this.internalTableData.filter((item, index) => {
+      this.tableData_.forEach((item, index) => {
         if (item._checked) {
           this.checkboxGroupModel.push(index);
         }

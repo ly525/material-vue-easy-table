@@ -49,13 +49,12 @@ export default {
         return [];
       }
 
-      let result = [],
-        resultRow = [],
-        cloneInternalColumns;
+      const result = [];
+      let resultRow = [];
 
 
             // 防止排序后对原数组进行干扰
-      cloneInternalColumns = deepClone(this.internalColumns);
+      const cloneInternalColumns = deepClone(this.columns_);
 
       cloneInternalColumns.sort(function (a, b) {
         if (a.isFrozen) {

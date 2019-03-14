@@ -7,21 +7,22 @@ export default {
   computed: {
         // 冻结的列集合
     frozenCols () {
-      return this.internalColumns.filter(x => x.isFrozen === true);
+      return this.columns_.filter(x => x.isFrozen === true);
     },
         // 非冻结列集合
     noFrozenCols () {
-      return this.internalColumns.filter(x => x.isFrozen !== true);
+      return this.columns_.filter(x => x.isFrozen !== true);
     },
         // 冻结的表头列集合
     frozenTitleCols () {
-      let frozenTitleCols = [], self = this;
+      const frozenTitleCols = [];
+      const self = this;
 
-      if (this.internalTitleRows.length > 0) {
+      if (this.titleRows_.length > 0) {
                 // 获取当前锁定的字段集合
         const frozenFields = this.frozenCols.map(x => x.field);
 
-        this.internalTitleRows.forEach(function (rows) {
+        this.titleRows_.forEach(function (rows) {
           const frozenTitleRows = rows.filter(function (row) {
             if (Array.isArray(row.fields)) {
               if (row.fields.every(field => frozenFields.indexOf(field) !== -1)) {
@@ -48,13 +49,14 @@ export default {
     },
         // 未的表头列集合
     noFrozenTitleCols () {
-      let noFrozenTitleCols = [], self = this;
+      const noFrozenTitleCols = [];
+      const self = this;
 
-      if (this.internalTitleRows.length > 0) {
+      if (this.titleRows_.length > 0) {
                 // 获取当前未锁定的字段集合
         const noFrozenFields = this.noFrozenCols.map(x => x.field);
 
-        this.internalTitleRows.forEach(function (rows) {
+        this.titleRows_.forEach(function (rows) {
           const noFrozenTitleRows = rows.filter(function (row) {
             if (Array.isArray(row.fields)) {
               return row.fields.every(field => noFrozenFields.indexOf(field) !== -1);
