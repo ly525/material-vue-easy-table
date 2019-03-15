@@ -1,7 +1,7 @@
 <template>
   <div class="v-table__overflow">
     <div class="v-table-views v-table-class we-table theme--light"
-         :style="{'width': internalWidth+'px', 'height': getTableHeight+'px','background-color':tableBgColor}">
+         :style="{'width': width_+'px', 'height': getTableHeight+'px','background-color':tableBgColor}">
         <!--左列-->
         <template v-if="frozenCols.length > 0">
           <div class="v-table-leftview" :style="{'width':leftViewWidth+'px'}">
@@ -382,7 +382,7 @@
 
         <table-empty
           v-if="isTableEmpty && isError"
-          :width="internalWidth"
+          :width="width_"
           :total-columns-width="totalColumnsWidth"
           :content-height="errorContentHeight"
           :title-height="getTotalColumnsHeight()"
@@ -391,7 +391,7 @@
         ></table-empty>
         <table-empty
           v-if="isTableEmpty && !isError"
-          :width="internalWidth"
+          :width="width_"
           :total-columns-width="totalColumnsWidth"
           :title-height="getTotalColumnsHeight()"
           :error-content="noDataContent"
@@ -450,7 +450,7 @@
                 // 本地列表数据
           tableData_: [],
                 // 本地宽度
-          internalWidth: 0,
+          width_: 0,
                 // 本地高度
           height_: 0,
                 // 本地列数据
@@ -680,7 +680,7 @@
         },
             // 右侧区域宽度
         rightViewWidth () {
-          const result = this.internalWidth - this.leftViewWidth;
+          const result = this.width_ - this.leftViewWidth;
 
           return this.hasFrozenColumn ? result - 2 : result;
         },
@@ -798,7 +798,7 @@
 
             // 初始化width
         initTableWidth () {
-          this.internalWidth = this.isHorizontalResize ? this.maxWidth : this.width;
+          this.width_ = this.isHorizontalResize ? this.maxWidth : this.width;
         },
 
             // 当宽度设置 && 非固定列未设置宽度时（列自适应）初始化列集合
@@ -821,14 +821,14 @@
 
           this.hasFrozenColumn = this.columns_.some(x => x.isFrozen);
 
-          this.initTableWidth(); // this.internalWidth = this.isHorizontalResize ? this.maxWidth : this.width;
+          this.initTableWidth(); // this.width_ = this.isHorizontalResize ? this.maxWidth : this.width;
 
           this.setSortColumns();
 
 
           let self = this, widthCountCheck = 0;
 
-          if (self.internalWidth && self.internalWidth > 0) {
+          if (self.width_ && self.width_ > 0) {
             const isHorizontalResize = this.isHorizontalResize;
             self.columns_.forEach(function (item) {
               // if (!(item.width && item.width > 0)) {
@@ -837,7 +837,7 @@
                 if (isHorizontalResize) {
                   console.error(`${self.errorMsg}If you are using the isHorizontalResize property,Please set the value for each column's width`);
                 } else {
-                  item.width = self.internalWidth - self.totalColumnsWidth;
+                  item.width = self.width_ - self.totalColumnsWidth;
                 }
               }
             });
@@ -852,10 +852,10 @@
             // 当没设置宽度和高度时动态计算
         initView () {
                 // 当没有设置宽度计算总宽度
-          if (!(this.internalWidth && this.internalWidth > 0)) {
+          if (!(this.width_ && this.width_ > 0)) {
             if (this.columns && this.columns.length > 0) {
-              this.internalWidth = this.columns.reduce((total, curr) => total + curr.width, 0);
-              // TODO 这种做法是否可以？ this.internalWidth = this.totalColumnsWidth;
+              this.width_ = this.columns.reduce((total, curr) => total + curr.width, 0);
+              // TODO 这种做法是否可以？ this.width_ = this.totalColumnsWidth;
             }
           }
 
@@ -903,6 +903,8 @@
         this.initView();
       },
       mounted () {
+        // 获得表格的滚动条
+        // v-scrollbar-wrap	表格滚动条样式名称（如果需要对表格滚动条样式进行订制，需要通过这个样式设置）
         this.setScrollbarWidth();
 
         this.tableEmpty();

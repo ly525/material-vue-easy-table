@@ -139,7 +139,7 @@ export default {
       const rightViewFooter = this.$el.querySelector('.v-table-rightview .v-table-footer');
       const hasTableFooter = this.hasTableFooter;
 
-      if (this.totalColumnsWidth < this.internalWidth) {
+      if (this.totalColumnsWidth < this.width_) {
         if (!hasTableFooter) {
           rightViewBody.style.overflowX = 'hidden';
 

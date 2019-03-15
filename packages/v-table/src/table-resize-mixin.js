@@ -40,7 +40,7 @@ export default {
         const tableContainerWidth = this.$el.clientWidth;
 
             // 3为容错值
-        if (tableContainerWidth - this.internalWidth > 3) {
+        if (tableContainerWidth - this.width_ > 3) {
           this.tableResize();
         }
       });
@@ -104,11 +104,11 @@ export default {
       const scrollbarWidth = this.scrollbarWidth;
 
 
-      if (this.isHorizontalResize && this.internalWidth && this.internalWidth > 0 && currentWidth > 0) {
+      if (this.isHorizontalResize && this.width_ && this.width_ > 0 && currentWidth > 0) {
         currentWidth = Math.min(currentWidth, maxWidth);
         currentWidth = Math.max(currentWidth, minWidth);
 
-        this.internalWidth = currentWidth;
+        this.width_ = currentWidth;
       }
 
       if (this.isVerticalResize && currentHeight > 0) {
